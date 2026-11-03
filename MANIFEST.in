@@ -1,0 +1,5 @@
+# Source distribution: setuptools adds the package, README and tests/test_*.py;
+# the tests also need their fixtures, and the examples ship alongside.
+include tests/conftest.py
+recursive-include examples *.py
+global-exclude __pycache__ *.py[cod]
