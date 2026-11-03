@@ -6,7 +6,10 @@ dependency: [httpx](https://www.python-httpx.org/).
 Documentation: [getting started with the API](https://pixlub.com/en/docs/api/getting-started)
 and [every module, its inputs and settings](https://pixlub.com/en/docs/modules).
 
-https://github.com/user-attachments/assets/b8ecd6c0-b65e-4c05-ae60-68e3d71c888a
+<!-- GitHub plays the video; PyPI drops the <video> tag and shows the animated preview instead. -->
+<video src="https://github.com/user-attachments/assets/b8ecd6c0-b65e-4c05-ae60-68e3d71c888a" controls muted width="100%">
+  <a href="https://github.com/user-attachments/assets/b8ecd6c0-b65e-4c05-ae60-68e3d71c888a"><img src="https://raw.githubusercontent.com/pixlub/pixlub-python/main/docs/demo.webp" alt="Install pixlub, write a script, run a real request and get the cut-out"></a>
+</video>
 
 ## Install
 
