@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/b8ecd6c0-b65e-4c05-ae60-68e3d71c888a
+
 # pixlub
 
 Official Python SDK for the [Pixlub](https://pixlub.com) API. Python 3.9+, one
