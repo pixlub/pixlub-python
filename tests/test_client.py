@@ -469,13 +469,16 @@ def test_failed_download_is_retried_without_running_again(make_client, api) -> N
 def test_oversized_output_is_not_read(make_client, api, monkeypatch: pytest.MonkeyPatch) -> None:
     # Announced without its size: the download itself stops at the limit.
     monkeypatch.setattr(_core, "MAX_OUTPUT_BYTES", 16)
-    api.queue("POST", "/v1/modules/removeBgApi", run_response([{"key": "out", "name": "image", "url": IMAGE_LINK}]))
+    unsized = [{"key": "out", "name": "image", "url": IMAGE_LINK}]
+    api.queue("POST", "/v1/modules/removeBgApi", run_response(unsized))
     client = make_client()
     with pytest.raises(UnexpectedResponseError, match="larger than"):
         client.tools.run("removeBgApi", image=PNG)
 
 
-def test_output_announced_too_large_is_not_downloaded(make_client, api, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_output_announced_too_large_is_not_downloaded(
+    make_client, api, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr(_core, "MAX_OUTPUT_BYTES", 16)
     client = make_client()
     with pytest.raises(UnexpectedResponseError, match="get it from its link") as error:
@@ -484,10 +487,18 @@ def test_output_announced_too_large_is_not_downloaded(make_client, api, monkeypa
     assert api.calls("GET", IMAGE_PATH) == []
 
 
-def test_outputs_too_large_together_are_not_downloaded(make_client, api, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_outputs_too_large_together_are_not_downloaded(
+    make_client, api, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr(_core, "MAX_RUN_OUTPUT_BYTES", len(PNG) + 1)
     outputs = [
-        {"key": f"out#{i}", "name": "image", "url": IMAGE_LINK, "content_type": "image/png", "bytes": len(PNG)}
+        {
+            "key": f"out#{i}",
+            "name": "image",
+            "url": IMAGE_LINK,
+            "content_type": "image/png",
+            "bytes": len(PNG),
+        }
         for i in range(2)
     ]
     api.queue("POST", "/v1/modules/removeBgApi", run_response(outputs))
