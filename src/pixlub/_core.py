@@ -57,7 +57,10 @@ DEFAULT_JOB_TIMEOUT = 1800.0
 DIRECT_UPLOAD_MAX_BYTES = 90 * 1024 * 1024
 MAX_INPUT_FILES = 64
 MAX_OUTPUTS = MAX_INPUT_FILES * 4
-MAX_OUTPUT_BYTES = 100 * 1024 * 1024
+# Largest output read into memory: above any image the API produces (uploaded
+# images go up to 1 GiB). MAX_RUN_OUTPUT_BYTES: all the outputs of one run together.
+MAX_OUTPUT_BYTES = 1024 * 1024 * 1024
+MAX_RUN_OUTPUT_BYTES = 4 * 1024 * 1024 * 1024
 MAX_JSON_BYTES = 10 * 1024 * 1024
 CATALOG_TTL_SECONDS = 600.0
 MAX_RETRIES_LIMIT = 5
@@ -665,6 +668,16 @@ def receipt_from_response(resp: Response, api_key: str, base_url: str) -> RunRec
                 bytes=_as_int(entry.get("bytes")),
             )
         )
+
+    # Announced sizes are checked before anything is downloaded.
+    for link in outputs:
+        if link.bytes is not None and link.bytes > MAX_OUTPUT_BYTES:
+            raise UnexpectedResponseError(
+                f"One of its files is {link.bytes} bytes, more than the {MAX_OUTPUT_BYTES} bytes "
+                "the SDK downloads: get it from its link instead."
+            )
+    if sum(link.bytes or 0 for link in outputs) > MAX_RUN_OUTPUT_BYTES:
+        raise UnexpectedResponseError("Its results are larger than the SDK accepts.")
 
     credits = payload.get("credits")
     credits = credits if isinstance(credits, dict) else {}

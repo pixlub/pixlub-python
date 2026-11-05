@@ -97,11 +97,12 @@ Large files are handled automatically: call `run()` the same way.
 | Limit | Value |
 | --- | --- |
 | File size, by plan | Free 10 MiB, Basic 50 MiB, Pro 3 GiB |
-| File size, by tool | images 100 MiB, video and audio 3 GiB, Office 250 MiB |
+| File size, by tool | images 1 GiB, video and audio 3 GiB, Office 250 MiB |
 | Image size | 40 megapixels |
 | Files per run | 64 |
 | Runs | 30 a minute per account, bursts of 10 |
 | Download links | 1 hour |
+| Results the SDK downloads | 1 GiB per file, 4 GiB per run (larger: use the link) |
 
 ## Async
 

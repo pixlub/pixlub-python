@@ -467,10 +467,40 @@ def test_failed_download_is_retried_without_running_again(make_client, api) -> N
 
 
 def test_oversized_output_is_not_read(make_client, api, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Announced without its size: the download itself stops at the limit.
     monkeypatch.setattr(_core, "MAX_OUTPUT_BYTES", 16)
+    api.queue("POST", "/v1/modules/removeBgApi", run_response([{"key": "out", "name": "image", "url": IMAGE_LINK}]))
     client = make_client()
     with pytest.raises(UnexpectedResponseError, match="larger than"):
         client.tools.run("removeBgApi", image=PNG)
+
+
+def test_output_announced_too_large_is_not_downloaded(make_client, api, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(_core, "MAX_OUTPUT_BYTES", 16)
+    client = make_client()
+    with pytest.raises(UnexpectedResponseError, match="get it from its link") as error:
+        client.tools.run("removeBgApi", image=PNG)
+    assert RUN_ID in str(error.value) and "charged" in str(error.value)
+    assert api.calls("GET", IMAGE_PATH) == []
+
+
+def test_outputs_too_large_together_are_not_downloaded(make_client, api, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(_core, "MAX_RUN_OUTPUT_BYTES", len(PNG) + 1)
+    outputs = [
+        {"key": f"out#{i}", "name": "image", "url": IMAGE_LINK, "content_type": "image/png", "bytes": len(PNG)}
+        for i in range(2)
+    ]
+    api.queue("POST", "/v1/modules/removeBgApi", run_response(outputs))
+    client = make_client()
+    with pytest.raises(UnexpectedResponseError, match="larger than the SDK accepts"):
+        client.tools.run("removeBgApi", image=PNG)
+    assert api.calls("GET", IMAGE_PATH) == []
+
+
+def test_output_limits_of_the_contract() -> None:
+    # Images go up to 1 GiB: so does one output; a run reads at most 4 GiB.
+    assert _core.MAX_OUTPUT_BYTES == 1 << 30
+    assert _core.MAX_RUN_OUTPUT_BYTES == 4 << 30
 
 
 def test_oversized_catalog_is_not_read(make_client, monkeypatch: pytest.MonkeyPatch) -> None:
